@@ -1,4 +1,4 @@
-TOOLCHAIN := $(DEVKITARM)
+TOOLCHAINTOOLCHAIN := $(DEVKITARM)
 COMPARE ?= 0
 
 ifeq (compare,$(MAKECMDGOALS))
@@ -69,21 +69,16 @@ else
   CPP := $(PREFIX)cpp
 endif
 
-ROM_NAME := CrystalDust_legacy.gba
-ELF_NAME := $(ROM_NAME:.gba=.elf)
-MAP_NAME := $(ROM_NAME:.gba=.map)
-OBJ_DIR_NAME := build/emerald
+# --- Unified Project Configuration ---
+ROM_NAME := CrystalDust_legacy
+ROM      := $(ROM_NAME).gba
+ELF      := $(ROM_NAME).elf
+MAP      := $(ROM_NAME).map
+SYM      := $(ROM_NAME).sym
 
-MODERN_ROM_NAME := CrystalDust.gba
-MODERN_ELF_NAME := $(MODERN_ROM_NAME:.gba=.elf)
-MODERN_MAP_NAME := $(MODERN_ROM_NAME:.gba=.map)
-MODERN_OBJ_DIR_NAME := build/modern
-
-SHELL := /bin/bash -o pipefail
-
-ELF = $(ROM:.gba=.elf)
-MAP = $(ROM:.gba=.map)
-SYM = $(ROM:.gba=.sym)
+OBJ_DIR  := build/emerald
+SHELL    := /bin/bash -o pipefail
+# -------------------------------------
 
 C_SUBDIR = src
 GFLIB_SUBDIR = gflib
