@@ -33,6 +33,7 @@ jobs:
 
       - name: Build tools
         run: |
+<<<<<<< HEAD
           # Use the project's own Makefile to build tools
           make tools -j$(nproc)
 
@@ -42,6 +43,38 @@ jobs:
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
           
           # Clean and compile
+=======
+          cd tools
+          for d in */; do
+            dir=$(echo "$d" | sed 's/\///')
+            if [ -f "$dir/Makefile" ]; then
+              make -C "$dir"
+            fi
+          done
+
+      - name: Verify and Prepare Build
+        run: |
+          # Fix dubious ownership error for the repository
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+          
+          # Initialize submodules
+          git submodule update --init --recursive
+          
+          # Handle ld_script.sed: search and copy to root
+          if [ ! -f "ld_script.sed" ]; then
+            echo "Searching for ld_script.sed..."
+            find . -name "ld_script.sed" -exec cp {} . \;
+          fi
+          
+          # Final check for required file
+          if [ ! -f "ld_script.sed" ]; then
+            echo "CRITICAL: ld_script.sed not found!"
+            exit 1
+          fi
+
+      - name: Build ROM
+        run: |
+>>>>>>> 5041e32f415330f9262312cc5d33bc5a03af4d8c
           make clean
           make -j$(nproc)
 
@@ -50,4 +83,8 @@ jobs:
         with:
           name: crystal-dust-rom
           path: '*.gba'
+<<<<<<< HEAD
           if-no-files-found: error
+=======
+          if-no-files-found: error
+>>>>>>> 5041e32f415330f9262312cc5d33bc5a03af4d8c
