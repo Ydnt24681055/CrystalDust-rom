@@ -1,5 +1,4 @@
-name: Build ROM
-
+name: build
 on:
   push:
     branches:
@@ -11,30 +10,61 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            libpng-dev \
-            libx11-dev \
-            gcc-arm-none-eabi \
-            binutils-arm-none-eabi
+          apt-get update
+          apt-get install -y build-essential libpng-dev git
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install agbcc
+        run: |
+          git clone https://github.com/pret/agbcc
+          cd agbcc
+          ./build.sh
+          ./install.sh ..
+
+      - name: Build tools
+        env:
+          GOFLAGS: "-buildvcs=false"
+        run: |
+          cd tools
+          for d in */; do
+            dir=$(echo "$d" | sed 's/\///')
+            if [ -f "$dir/Makefile" ]; then
+              echo "Building tool in $dir..."
+              make -C "$dir"
+            fi
+          done
+          cd ..
+
+      - name: Locate and link config
+        run: |
+          # Find the config file and link it to root so Poryscript finds it
+          CONFIG_PATH=$(find . -name "command_config.json" | head -n 1)
+          if [ -f "$CONFIG_PATH" ]; then
+            echo "Found config at $CONFIG_PATH, linking to root..."
+            ln -s "$CONFIG_PATH" command_config.json
+          else
+            echo "Warning: command_config.json not found."
+          fi
 
       - name: Build ROM
-        # We use -j$(nproc) to compile using all available CPU threads
-        run: |
-          make -j$(nproc)
+        run: make -j$(nproc)
 
-      - name: Upload Artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: crystal-dust-rom
-          path: "*.gba"
-          if-no-files-found: error
+          name: rom
+          path: '*.gba'
