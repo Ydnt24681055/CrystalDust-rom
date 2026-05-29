@@ -1,4 +1,5 @@
-name: build
+name: Build ROM
+
 on:
   push:
     branches:
@@ -47,24 +48,16 @@ jobs:
               make -C "$dir"
             fi
           done
-          cd ..
-
-      - name: Locate and link config
-        run: |
-          # Find the config file and link it to root so Poryscript finds it
-          CONFIG_PATH=$(find . -name "command_config.json" | head -n 1)
-          if [ -f "$CONFIG_PATH" ]; then
-            echo "Found config at $CONFIG_PATH, linking to root..."
-            ln -s "$CONFIG_PATH" command_config.json
-          else
-            echo "Warning: command_config.json not found."
-          fi
 
       - name: Build ROM
-        run: make -j$(nproc)
+        run: |
+          # Clean build to ensure scripts like ld_script.sed are handled fresh
+          make clean
+          make -j$(nproc)
 
-      - name: Upload
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rom
+          name: crystal-dust-rom
           path: '*.gba'
+          if-no-files-found: error
