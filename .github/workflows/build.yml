@@ -43,13 +43,19 @@ jobs:
 
       - name: Verify and Prepare Build
         run: |
+          # Fix dubious ownership error for the repository
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+          
+          # Initialize submodules
           git submodule update --init --recursive
-          # If ld_script.sed is missing, this diagnostic will catch it
+          
+          # Handle ld_script.sed: search and copy to root
           if [ ! -f "ld_script.sed" ]; then
             echo "Searching for ld_script.sed..."
             find . -name "ld_script.sed" -exec cp {} . \;
           fi
           
+          # Final check for required file
           if [ ! -f "ld_script.sed" ]; then
             echo "CRITICAL: ld_script.sed not found!"
             exit 1
