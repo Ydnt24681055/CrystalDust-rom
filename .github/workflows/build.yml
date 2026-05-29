@@ -37,10 +37,10 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Configure safe directory to prevent build failures
+          # Ensure Git recognizes the workspace as safe
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
           
-          # Clean and compile the ROM
+          # Clean and compile
           make clean
           make -j$(nproc)
 
