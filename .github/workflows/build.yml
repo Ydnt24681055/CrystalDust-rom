@@ -44,14 +44,18 @@ jobs:
           for d in */; do
             dir=$(echo "$d" | sed 's/\///')
             if [ -f "$dir/Makefile" ]; then
-              echo "Building tool in $dir..."
               make -C "$dir"
             fi
           done
+          cd ..
 
-      - name: Build ROM
+      - name: Debug and Build ROM
         run: |
-          # Clean build to ensure scripts like ld_script.sed are handled fresh
+          # Debug: Verify the file exists before making
+          echo "Checking for ld_script.sed..."
+          find . -name "ld_script.sed"
+          
+          # Proceed with build
           make clean
           make -j$(nproc)
 
