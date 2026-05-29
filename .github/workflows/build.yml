@@ -49,13 +49,24 @@ jobs:
           done
           cd ..
 
-      - name: Debug and Build ROM
+      - name: Prepare Build Environment
         run: |
-          # Debug: Verify the file exists before making
-          echo "Checking for ld_script.sed..."
-          find . -name "ld_script.sed"
+          # Diagnostics: Print current directory structure to find the missing file
+          echo "Current directory structure:"
+          find . -maxdepth 3 -name "ld_script.sed"
           
-          # Proceed with build
+          # Fix: Locate and copy to where the Makefile expects it
+          SED_PATH=$(find . -name "ld_script.sed" | head -n 1)
+          if [ -n "$SED_PATH" ]; then
+            echo "Moving $SED_PATH to root for build process..."
+            cp "$SED_PATH" ./ld_script.sed
+          else
+            echo "CRITICAL: ld_script.sed not found!"
+            exit 1
+          fi
+
+      - name: Build ROM
+        run: |
           make clean
           make -j$(nproc)
 
