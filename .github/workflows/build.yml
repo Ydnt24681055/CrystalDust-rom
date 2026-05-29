@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - progress
-  pull_request:
-    branches:
-      - progress
 
 jobs:
   build:
@@ -24,29 +21,23 @@ jobs:
           apt-get update
           apt-get install -y build-essential libpng-dev git
 
-      - name: Install agbcc
+      - name: Build tools and ROM
         run: |
-          git clone https://github.com/pret/agbcc
-          cd agbcc
-          ./build.sh
-          ./install.sh ..
-
-      - name: Build tools
-        run: |
-          make tools -j$(nproc)
-
-      - name: Build ROM
-        run: |
-          # Configure safe directory to prevent build failures
+          # Ensure git recognizes the directory
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
           
-          # Clean and compile
+          # Clean EVERYTHING to ensure new Makefile rules take effect
           make clean
-          make -j$(nproc)
+          
+          # Rebuild tools to incorporate any new Makefile logic
+          make tools -j$(nproc)
+          
+          # Build the ROM
+          make CrystalDust_legacy.gba -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
-          path: '*.gba'
+          path: 'CrystalDust_legacy.gba'
           if-no-files-found: error
