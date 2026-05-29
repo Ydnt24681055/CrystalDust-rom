@@ -11,30 +11,43 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkitarm:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            libpng-dev \
-            libx11-dev \
-            gcc-arm-none-eabi \
-            binutils-arm-none-eabi
+          apt-get update
+          apt-get install -y build-essential libpng-dev git
+
+      - name: Install agbcc
+        run: |
+          git clone https://github.com/pret/agbcc
+          cd agbcc
+          ./build.sh
+          ./install.sh ..
+
+      - name: Build tools
+        run: |
+          # Use the project's own Makefile to build tools
+          make tools -j$(nproc)
 
       - name: Build ROM
-        # We use -j$(nproc) to compile using all available CPU threads
         run: |
+          # Ensure Git recognizes the workspace as safe
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+          
+          # Clean and compile
+          make clean
           make -j$(nproc)
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
-          path: "*.gba"
+          path: '*.gba'
           if-no-files-found: error
