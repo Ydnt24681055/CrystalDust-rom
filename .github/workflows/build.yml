@@ -24,11 +24,6 @@ jobs:
           apt-get update
           apt-get install -y build-essential libpng-dev git
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.22'
-
       - name: Install agbcc
         run: |
           git clone https://github.com/pret/agbcc
@@ -37,8 +32,6 @@ jobs:
           ./install.sh ..
 
       - name: Build tools
-        env:
-          GOFLAGS: "-buildvcs=false"
         run: |
           cd tools
           for d in */; do
@@ -47,20 +40,17 @@ jobs:
               make -C "$dir"
             fi
           done
-          cd ..
 
-      - name: Prepare Build Environment
+      - name: Verify and Prepare Build
         run: |
-          # Diagnostics: Print current directory structure to find the missing file
-          echo "Current directory structure:"
-          find . -maxdepth 3 -name "ld_script.sed"
+          git submodule update --init --recursive
+          # If ld_script.sed is missing, this diagnostic will catch it
+          if [ ! -f "ld_script.sed" ]; then
+            echo "Searching for ld_script.sed..."
+            find . -name "ld_script.sed" -exec cp {} . \;
+          fi
           
-          # Fix: Locate and copy to where the Makefile expects it
-          SED_PATH=$(find . -name "ld_script.sed" | head -n 1)
-          if [ -n "$SED_PATH" ]; then
-            echo "Moving $SED_PATH to root for build process..."
-            cp "$SED_PATH" ./ld_script.sed
-          else
+          if [ ! -f "ld_script.sed" ]; then
             echo "CRITICAL: ld_script.sed not found!"
             exit 1
           fi
