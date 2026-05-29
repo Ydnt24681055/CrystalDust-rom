@@ -1,0 +1,40 @@
+name: Build ROM
+
+on:
+  push:
+    branches:
+      - progress
+  pull_request:
+    branches:
+      - progress
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libpng-dev \
+            libx11-dev \
+            gcc-arm-none-eabi \
+            binutils-arm-none-eabi
+
+      - name: Build ROM
+        # We use -j$(nproc) to compile using all available CPU threads
+        run: |
+          make -j$(nproc)
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crystal-dust-rom
+          path: "*.gba"
+          if-no-files-found: error
