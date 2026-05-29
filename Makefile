@@ -447,14 +447,11 @@ LD_SCRIPT := ld_script_modern.txt
 LD_SCRIPT_DEPS := 
 endif
 
+LD_SCRIPT := ld_script.txt
 $(OBJ_DIR)/ld_script.ld: $(LD_SCRIPT) $(LD_SCRIPT_DEPS)
-	cd $(OBJ_DIR) && sed "s#tools/#../tools/#g" ../$(LD_SCRIPT) > ld_script.ld
-
-$(ELF): $(OBJ_DIR)/ld_script.ld $(OBJS) berry_fix libagbsyscall
-	@echo "cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ld_script.ld -o ../../$@ <objects> <lib>"
-	@cd $(OBJ_DIR) && $(LD) $(LDFLAGS) -T ld_script.ld -o ../../$@ $(OBJS_REL) $(LIB)
-	$(FIX) $@ -t"$(TITLE)" -c$(GAME_CODE) -m$(MAKER_CODE) -r$(REVISION) --silent
-
+	@mkdir -p $(OBJ_DIR)
+	@echo "Generating linker script..."
+	sed "s#tools/#../tools/#g" $< > $@
 $(ROM): $(ELF)
 	$(OBJCOPY) -O binary $< $@
 	@echo "current ROM size:" $$(stat -c "%s" $(ROM))
