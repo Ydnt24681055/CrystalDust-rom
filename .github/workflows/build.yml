@@ -13,27 +13,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          submodules: recursive
           fetch-depth: 0
 
-      - name: Configure and Initialize Submodules
+      - name: Configure Git
         run: |
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
-          # This command forces the submodules to actually download their files
-          git submodule sync --recursive
-          git submodule update --init --recursive --force
 
-      - name: Verify tools content
+      - name: Install dependencies
         run: |
-          echo "Listing contents of tools/ directory:"
-          ls -R tools/
-
-      - name: Build tools
-        run: |
-          # Try to build the tools after verifying they are present
-          make -C tools
+          apt-get update
+          apt-get install -y build-essential libpng-dev pkg-config
 
       - name: Build ROM
         run: |
+          # We rely on the root Makefile to manage tool compilation automatically
           make clean
           make -j$(nproc)
 
