@@ -8,8 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # Using a container that already has the necessary tools for GBA decompilation
-    container: ghcr.io/pret/agbcc:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,9 +15,21 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Set safe directory
+      - name: Install build dependencies
         run: |
-          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+          sudo apt-get update
+          # Install the specific arm-none-eabi compiler and build tools
+          sudo apt-get install -y build-essential libpng-dev pkg-config gcc-arm-none-eabi binutils-arm-none-eabi
+
+      - name: Build agbcc
+        run: |
+          # Use the agbcc files you added to the root
+          cd agbcc
+          chmod -R +x .
+          ./build.sh
+          # Place the binary where your Makefile expects it
+          mkdir -p ../tools/agbcc/bin
+          cp agbcc ../tools/agbcc/bin/agbcc
 
       - name: Build ROM
         run: |
