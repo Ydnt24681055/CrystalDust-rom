@@ -13,19 +13,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          submodules: recursive
           fetch-depth: 0
 
-      - name: Manually Install agbcc
+      - name: Install dependencies
         run: |
-          # Remove the empty/broken folder
-          rm -rf tools/agbcc
-          # Clone the official agbcc source directly
-          git clone https://github.com/pret/agbcc tools/agbcc
-          # Build it
-          make -C tools/agbcc
-          # Ensure it's in the bin directory as expected by the ROM Makefile
-          mkdir -p tools/agbcc/bin
-          cp tools/agbcc/agbcc tools/agbcc/bin/agbcc
+          apt-get update
+          apt-get install -y build-essential libpng-dev pkg-config
+
+      - name: Set safe directory
+        run: |
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+
+      - name: Prepare agbcc
+        run: |
+          # agbcc is in the root, so we enter that directory
+          cd agbcc
+          # Ensure execution permissions
+          chmod +x build.sh
+          ./build.sh
+          # Create the path that the root Makefile expects (tools/agbcc/bin)
+          mkdir -p ../tools/agbcc/bin
+          # Copy the binary where the ROM build system expects it
+          cp agbcc ../tools/agbcc/bin/agbcc
 
       - name: Build ROM
         run: |
