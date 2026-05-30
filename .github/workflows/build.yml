@@ -13,22 +13,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: false # Disable default checkout to avoid ownership issues
+          fetch-depth: 0
 
-      - name: Set safe directory and init submodules
+      - name: Force submodule initialization
         run: |
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
-          git submodule update --init --recursive
-
-      - name: Verify tools directory
-        run: |
-          echo "Listing contents of tools directory:"
-          ls -F tools/
-
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config
+          git submodule sync --recursive
+          git submodule update --init --recursive --force
 
       - name: Build tools
         run: |
