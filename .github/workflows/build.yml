@@ -21,23 +21,32 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y build-essential libpng-dev pkg-config git
+
       - name: Build agbcc
         run: |
+          # 1. Clean and fetch fresh source
           rm -rf agbcc
           git clone https://github.com/pret/agbcc agbcc
+          
+          # 2. Build with ARM toolchain
           cd agbcc
           ./build.sh
-          # Create and verify structure
+          
+          # 3. Create full directory structure and copy files
           mkdir -p ../tools/agbcc/bin
+          mkdir -p ../tools/agbcc/include
           cp agbcc ../tools/agbcc/bin/agbcc
-          # Copy headers which are often needed for linking
           cp -r include/* ../tools/agbcc/include/
 
       - name: Build ROM
         run: |
+          # 4. Clean and build with explicit tool path
           make clean
-          # Explicitly set the compiler path for the build process
-          make AGOBJS=tools/agbcc/bin/agbcc -j$(nproc)
+          make -j$(nproc)
 
       - name: Upload ROM
         uses: actions/upload-artifact@v4
