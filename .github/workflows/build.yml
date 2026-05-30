@@ -16,19 +16,10 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Debug and verify tools
-        run: |
-          echo "Listing contents of tools directory:"
-          ls -R tools/
-
       - name: Install dependencies
         run: |
           apt-get update
           apt-get install -y build-essential libpng-dev pkg-config
-
-      - name: Install agbcc
-        run: |
-          ./build.sh --install-agbcc
 
       - name: Build tools
         run: |
