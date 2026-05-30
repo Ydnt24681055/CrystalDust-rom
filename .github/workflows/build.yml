@@ -13,7 +13,7 @@ jobs:
       DEVKITARM: /opt/devkitpro/devkitARM
       DEVKITPRO: /opt/devkitpro
       PATH: /opt/devkitpro/devkitARM/bin:/usr/local/bin:/usr/bin:/bin
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,21 +26,18 @@ jobs:
           rm -rf agbcc
           git clone https://github.com/pret/agbcc agbcc
           cd agbcc
-          # Build with the ARM toolchain
           ./build.sh
-          # Install to the project folder
+          # Create and verify structure
           mkdir -p ../tools/agbcc/bin
           cp agbcc ../tools/agbcc/bin/agbcc
-          # Ensure it is executable
-          chmod +x ../tools/agbcc/bin/agbcc
+          # Copy headers which are often needed for linking
+          cp -r include/* ../tools/agbcc/include/
 
       - name: Build ROM
         run: |
-          # 1. Clean
           make clean
-          # 2. Build with V=1 to show exact compiler commands in the log
-          # This will show us EXACTLY why it can't find stddef.h
-          make V=1 -j$(nproc)
+          # Explicitly set the compiler path for the build process
+          make AGOBJS=tools/agbcc/bin/agbcc -j$(nproc)
 
       - name: Upload ROM
         uses: actions/upload-artifact@v4
