@@ -15,22 +15,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug Environment
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Listing all files in repository (recursive):"
-          find . -maxdepth 2 -not -path '*/.*'
-
-      - name: Try to initialize submodules
+      - name: Configure and Initialize Submodules
         run: |
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+          # This command forces the submodules to actually download their files
           git submodule sync --recursive
           git submodule update --init --recursive --force
 
+      - name: Verify tools content
+        run: |
+          echo "Listing contents of tools/ directory:"
+          ls -R tools/
+
       - name: Build tools
         run: |
-          echo "Listing contents of tools/ before make:"
-          ls -F tools/
+          # Try to build the tools after verifying they are present
           make -C tools
 
       - name: Build ROM
