@@ -16,18 +16,19 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Configure Git
-        run: |
-          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
-
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config
+          # We add gcc-arm-none-eabi to ensure stddef.h is available
+          apt-get install -y build-essential libpng-dev pkg-config gcc-arm-none-eabi
+
+      - name: Set safe directory
+        run: |
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
 
       - name: Build ROM
         run: |
-          # We rely on the root Makefile to manage tool compilation automatically
+          # Use the root Makefile as intended
           make clean
           make -j$(nproc)
 
