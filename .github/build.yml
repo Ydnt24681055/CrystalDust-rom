@@ -1,0 +1,36 @@
+
+name: CI
+
+on:
+  push:
+    branches: [ progress ]
+  pull_request:
+    branches: [ progress ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential binutils-arm-none-eabi gcc-arm-none-eabi libpng-dev
+
+      - name: Build ROM
+        run: |
+          # The 'make clean' step is crucial for complex branches like 'progress'
+          make clean
+          # Build the ROM
+          make -j$(nproc)
+          
+      - name: Upload ROM
+        uses: actions/upload-artifact@v3
+        with:
+          name: rom
+          path: *.gba
