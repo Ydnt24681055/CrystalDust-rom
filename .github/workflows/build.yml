@@ -22,22 +22,19 @@ jobs:
 
       - name: Build tools
         run: |
-          # CrystalDust requires these tools to be built first
           make -C tools
 
       - name: Install agbcc
         run: |
-          # This compiles the GBA C compiler from source
           ./build.sh --install-agbcc
 
       - name: Build ROM
         run: |
-          # Explicitly move to the root of the project where the Makefile lives
-          cd . 
           make clean
           make -j$(nproc)
+
       - name: Upload ROM
         uses: actions/upload-artifact@v4
         with:
           name: crystal-dust-rom
-          path: *.gba
+          path: '*.gba'
