@@ -9,6 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container: devkitpro/devkitarm:latest
+    env:
+      DEVKITARM: /opt/devkitpro/devkitARM
+      DEVKITPRO: /opt/devkitpro
+      PATH: /opt/devkitpro/devkitARM/bin:/usr/local/bin:/usr/bin:/bin
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,32 +21,26 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install dependencies
-        run: |
-          apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config git
-
       - name: Build agbcc
         run: |
           rm -rf agbcc
           git clone https://github.com/pret/agbcc agbcc
           cd agbcc
-          export PATH=/opt/devkitpro/devkitARM/bin:$PATH
+          # Build with the ARM toolchain
           ./build.sh
-          
-          # 1. Create the exact folder structure the Makefile expects
+          # Install to the project folder
           mkdir -p ../tools/agbcc/bin
-          # 2. Copy the binary
           cp agbcc ../tools/agbcc/bin/agbcc
-          # 3. Create a symlink in the root just in case the Makefile looks there
-          ln -s tools/agbcc/bin/agbcc agbcc_bin
+          # Ensure it is executable
+          chmod +x ../tools/agbcc/bin/agbcc
 
       - name: Build ROM
         run: |
-          export PATH=/opt/devkitpro/devkitARM/bin:$PATH
-          # Force the compiler variable directly
+          # 1. Clean
           make clean
-          make AGOBJS=tools/agbcc/bin/agbcc -j$(nproc)
+          # 2. Build with V=1 to show exact compiler commands in the log
+          # This will show us EXACTLY why it can't find stddef.h
+          make V=1 -j$(nproc)
 
       - name: Upload ROM
         uses: actions/upload-artifact@v4
