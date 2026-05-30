@@ -16,6 +16,10 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Set safe directory
+        run: |
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
+
       - name: Force submodule update
         run: |
           git submodule sync --recursive
