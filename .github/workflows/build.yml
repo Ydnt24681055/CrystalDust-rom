@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          # We add gcc-arm-none-eabi to ensure stddef.h is available
+          # Including build-essential and gcc-arm-none-eabi provides the missing stddef.h
           apt-get install -y build-essential libpng-dev pkg-config gcc-arm-none-eabi
 
       - name: Set safe directory
@@ -28,7 +28,7 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Use the root Makefile as intended
+          # Using the root Makefile to manage tool compilation
           make clean
           make -j$(nproc)
 
