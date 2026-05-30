@@ -13,19 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           fetch-depth: 0
 
-      - name: Install dependencies
+      - name: Manually Install agbcc
         run: |
-          apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config
-
-      - name: Build agbcc
-        run: |
-          # This forces the build of the specific compiler tool needed for GBA
+          # Remove the empty/broken folder
+          rm -rf tools/agbcc
+          # Clone the official agbcc source directly
+          git clone https://github.com/pret/agbcc tools/agbcc
+          # Build it
           make -C tools/agbcc
-          # Copy it to a location where the root Makefile expects it
+          # Ensure it's in the bin directory as expected by the ROM Makefile
           mkdir -p tools/agbcc/bin
           cp tools/agbcc/agbcc tools/agbcc/bin/agbcc
 
