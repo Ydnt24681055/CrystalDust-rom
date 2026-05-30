@@ -16,6 +16,16 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Force submodule update
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Verify tools directory
+        run: |
+          echo "Listing contents of tools directory to ensure submodules exist:"
+          ls -F tools/
+
       - name: Install dependencies
         run: |
           apt-get update
