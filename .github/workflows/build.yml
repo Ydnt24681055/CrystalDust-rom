@@ -13,21 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
-          fetch-depth: 0
+          submodules: false # Disable default checkout to avoid ownership issues
 
-      - name: Set safe directory
+      - name: Set safe directory and init submodules
         run: |
           git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
-
-      - name: Force submodule update
-        run: |
-          git submodule sync --recursive
           git submodule update --init --recursive
 
       - name: Verify tools directory
         run: |
-          echo "Listing contents of tools directory to ensure submodules exist:"
+          echo "Listing contents of tools directory:"
           ls -F tools/
 
       - name: Install dependencies
