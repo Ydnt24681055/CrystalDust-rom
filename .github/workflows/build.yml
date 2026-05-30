@@ -23,27 +23,25 @@ jobs:
 
       - name: Build agbcc
         run: |
-          # Remove existing folder to ensure a clean state
           rm -rf agbcc
-          # Clone the official compiler source
           git clone https://github.com/pret/agbcc agbcc
-          
-          # Build agbcc with the correct ARM toolchain path
           cd agbcc
           export PATH=/opt/devkitpro/devkitARM/bin:$PATH
-          chmod +x build.sh
           ./build.sh
           
-          # Create expected directory structure for the root Makefile
+          # 1. Create the exact folder structure the Makefile expects
           mkdir -p ../tools/agbcc/bin
+          # 2. Copy the binary
           cp agbcc ../tools/agbcc/bin/agbcc
+          # 3. Create a symlink in the root just in case the Makefile looks there
+          ln -s tools/agbcc/bin/agbcc agbcc_bin
 
       - name: Build ROM
         run: |
-          # Ensure toolchain is in path for the main ROM build
           export PATH=/opt/devkitpro/devkitARM/bin:$PATH
+          # Force the compiler variable directly
           make clean
-          make -j$(nproc)
+          make AGOBJS=tools/agbcc/bin/agbcc -j$(nproc)
 
       - name: Upload ROM
         uses: actions/upload-artifact@v4
