@@ -32,11 +32,10 @@ jobs:
 
       - name: Build ROM
         run: |
-          # Force a full clean to ensure no old/broken files remain
+          # Explicitly move to the root of the project where the Makefile lives
+          cd . 
           make clean
-          # Build the ROM
           make -j$(nproc)
-
       - name: Upload ROM
         uses: actions/upload-artifact@v4
         with:
