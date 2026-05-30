@@ -8,7 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # This container includes the arm-none-eabi tools missing from your build
     container: devkitpro/devkitarm:latest
     steps:
       - name: Checkout repository
@@ -17,22 +16,30 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install build dependencies
+      - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config git
+          apt-get install -y build-essential libpng-dev pkg-config
 
-      - name: Prepare clean agbcc
+      - name: Prepare agbcc
         run: |
+          # 1. Clean up and fetch fresh source
           rm -rf agbcc
           git clone https://github.com/pret/agbcc agbcc
+          
+          # 2. Build with explicit path to ARM toolchain
           cd agbcc
+          export PATH=/opt/devkitpro/devkitARM/bin:$PATH
           ./build.sh
+          
+          # 3. Place binary in expected location for Makefile
           mkdir -p ../tools/agbcc/bin
           cp agbcc ../tools/agbcc/bin/agbcc
 
       - name: Build ROM
         run: |
+          # Ensure toolchain is in path for the main build
+          export PATH=/opt/devkitpro/devkitARM/bin:$PATH
           make clean
           make -j$(nproc)
 
