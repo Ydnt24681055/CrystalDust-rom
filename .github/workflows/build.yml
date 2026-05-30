@@ -18,16 +18,18 @@ jobs:
       - name: Install build dependencies
         run: |
           sudo apt-get update
-          # Install the specific arm-none-eabi compiler and build tools
-          sudo apt-get install -y build-essential libpng-dev pkg-config gcc-arm-none-eabi binutils-arm-none-eabi
+          sudo apt-get install -y build-essential libpng-dev pkg-config
 
-      - name: Build agbcc
+      - name: Prepare clean agbcc
         run: |
-          # Use the agbcc files you added to the root
+          # Remove your incomplete local folder
+          rm -rf agbcc
+          # Clone the official, complete source
+          git clone https://github.com/pret/agbcc agbcc
+          # Build it
           cd agbcc
-          chmod -R +x .
           ./build.sh
-          # Place the binary where your Makefile expects it
+          # Place the binary where the Makefile expects it
           mkdir -p ../tools/agbcc/bin
           cp agbcc ../tools/agbcc/bin/agbcc
 
