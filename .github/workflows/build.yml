@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # This container includes the arm-none-eabi tools missing from your build
+    container: devkitpro/devkitarm:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,19 +19,15 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libpng-dev pkg-config
+          apt-get update
+          apt-get install -y build-essential libpng-dev pkg-config git
 
       - name: Prepare clean agbcc
         run: |
-          # Remove your incomplete local folder
           rm -rf agbcc
-          # Clone the official, complete source
           git clone https://github.com/pret/agbcc agbcc
-          # Build it
           cd agbcc
           ./build.sh
-          # Place the binary where the Makefile expects it
           mkdir -p ../tools/agbcc/bin
           cp agbcc ../tools/agbcc/bin/agbcc
 
