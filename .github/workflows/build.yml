@@ -8,7 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm:latest
+    # Using a container that already has the necessary tools for GBA decompilation
+    container: ghcr.io/pret/agbcc:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -16,24 +17,9 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install dependencies
+      - name: Set safe directory
         run: |
-          apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config
-
-      - name: Prepare agbcc
-        run: |
-          # 1. Force execution permissions on the entire agbcc folder
-          # This fixes the 'Permission denied' error on move-if-change
-          chmod -R +x agbcc/
-          
-          # 2. Build the compiler
-          cd agbcc
-          ./build.sh
-          
-          # 3. Ensure the binary is where the root Makefile expects it
-          mkdir -p ../tools/agbcc/bin
-          cp agbcc ../tools/agbcc/bin/agbcc
+          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
 
       - name: Build ROM
         run: |
