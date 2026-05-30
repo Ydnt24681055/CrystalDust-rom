@@ -21,20 +21,18 @@ jobs:
           apt-get update
           apt-get install -y build-essential libpng-dev pkg-config
 
-      - name: Set safe directory
-        run: |
-          git config --global --add safe.directory /__w/CrystalDust-rom/CrystalDust-rom
-
       - name: Prepare agbcc
         run: |
-          # agbcc is in the root, so we enter that directory
+          # 1. Force execution permissions on the entire agbcc folder
+          # This fixes the 'Permission denied' error on move-if-change
+          chmod -R +x agbcc/
+          
+          # 2. Build the compiler
           cd agbcc
-          # Ensure execution permissions
-          chmod +x build.sh
           ./build.sh
-          # Create the path that the root Makefile expects (tools/agbcc/bin)
+          
+          # 3. Ensure the binary is where the root Makefile expects it
           mkdir -p ../tools/agbcc/bin
-          # Copy the binary where the ROM build system expects it
           cp agbcc ../tools/agbcc/bin/agbcc
 
       - name: Build ROM
