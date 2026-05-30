@@ -19,26 +19,28 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get update
-          apt-get install -y build-essential libpng-dev pkg-config
+          apt-get install -y build-essential libpng-dev pkg-config git
 
-      - name: Prepare agbcc
+      - name: Build agbcc
         run: |
-          # 1. Clean up and fetch fresh source
+          # Remove existing folder to ensure a clean state
           rm -rf agbcc
+          # Clone the official compiler source
           git clone https://github.com/pret/agbcc agbcc
           
-          # 2. Build with explicit path to ARM toolchain
+          # Build agbcc with the correct ARM toolchain path
           cd agbcc
           export PATH=/opt/devkitpro/devkitARM/bin:$PATH
+          chmod +x build.sh
           ./build.sh
           
-          # 3. Place binary in expected location for Makefile
+          # Create expected directory structure for the root Makefile
           mkdir -p ../tools/agbcc/bin
           cp agbcc ../tools/agbcc/bin/agbcc
 
       - name: Build ROM
         run: |
-          # Ensure toolchain is in path for the main build
+          # Ensure toolchain is in path for the main ROM build
           export PATH=/opt/devkitpro/devkitARM/bin:$PATH
           make clean
           make -j$(nproc)
